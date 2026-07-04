@@ -1,0 +1,17 @@
+{
+  "name": "certify-acme",
+  "version": "1.0.0",
+  "description": "Local ACME (Lets Encrypt) certificate tool with DNS-01 validation, PEM + PFX export",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "acme-client": "^5.4.0",
+    "express": "^5.2.1",
+    "node-forge": "^1.4.0"
+  }
+}
