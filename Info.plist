@@ -9,9 +9,9 @@
     <key>CFBundleIdentifier</key>
     <string>com.steingrimosa.certify</string>
     <key>CFBundleVersion</key>
-    <string>1.0</string>
+    <string>1.1.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>1.1.0</string>
     <key>CFBundleExecutable</key>
     <string>Certify</string>
     <key>CFBundlePackageType</key>
@@ -31,5 +31,11 @@
         <key>NSAllowsLocalNetworking</key>
         <true/>
     </dict>
+    <key>SUFeedURL</key>
+    <string>https://raw.githubusercontent.com/steingmo/certify/main/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>bfk3xLADn+lXCwFVWvwbYf4DL5e+imVJSHMz5s6sds0=</string>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
 </dict>
 </plist>

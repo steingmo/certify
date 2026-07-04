@@ -24,8 +24,13 @@ cp assets/node "$STAGED_APP/Contents/Resources/node"
 cp "$SERVER_SRC/server.js" "$SERVER_SRC/package.json" "$STAGED_APP/Contents/Resources/server/"
 cp -R "$SERVER_SRC/public" "$STAGED_APP/Contents/Resources/server/public"
 cp -R "$SERVER_SRC/node_modules" "$STAGED_APP/Contents/Resources/server/node_modules"
+
+mkdir -p "$STAGED_APP/Contents/Frameworks"
+ditto .build/release/Sparkle.framework "$STAGED_APP/Contents/Frameworks/Sparkle.framework"
+install_name_tool -add_rpath @executable_path/../Frameworks "$STAGED_APP/Contents/MacOS/Certify"
 xattr -cr "$STAGED_APP"
 
+codesign --force --deep --sign - "$STAGED_APP/Contents/Frameworks/Sparkle.framework"
 codesign --force --sign - "$STAGED_APP/Contents/Resources/node"
 codesign --force --sign - "$STAGED_APP"
 

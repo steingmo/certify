@@ -4,6 +4,7 @@ import SwiftUI
 struct CertifyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var server = ServerManager()
+    @StateObject private var updater = UpdaterViewModel()
 
     var body: some Scene {
         WindowGroup {
@@ -14,6 +15,9 @@ struct CertifyApp: App {
                     appDelegate.server = server
                     server.start()
                 }
+        }
+        .commands {
+            CheckForUpdatesCommand(updater: updater)
         }
     }
 }
