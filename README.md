@@ -5,12 +5,25 @@ DNS-01 validation — like a mini Certify The Web / Certbot with a GUI.
 Issues certificates (including wildcards), saves certbot-style PEM files,
 and exports password-protected PFX bundles for Windows/IIS/RDS.
 
-## Download
+## Install
 
-**[Download the latest Certify.zip](https://github.com/steingmo/certify/releases/latest)** —
-unzip, drag `Certify.app` to Applications, open. Signed and notarized; runs on
-macOS 13+ (Intel and Apple Silicon). Nothing else to install — the Node.js
-runtime is bundled inside the app.
+With [Homebrew](https://brew.sh):
+
+```sh
+brew install --cask steingmo/tap/certify
+```
+
+Or grab the latest notarized build from the
+[Releases page](https://github.com/steingmo/certify/releases), unzip, and drag
+**Certify.app** to Applications. The app is signed and notarized with a
+Developer ID, so it runs without Gatekeeper warnings.
+
+Requires macOS 13 (Ventura) or newer, Intel or Apple silicon. Nothing else to
+install — the Node.js runtime is bundled inside the app.
+
+The app checks for updates via [Sparkle](https://sparkle-project.org)
+(or on demand from the app menu) and can install them in place. Homebrew
+installs can also update with `brew upgrade --cask certify`.
 
 ## How it works
 
