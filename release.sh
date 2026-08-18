@@ -70,6 +70,10 @@ cp "$STAGED_ZIP" "$ZIP"
 
 echo "==> Generating appcast.xml"
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Info.plist)
+# Sparkle compares sparkle:version against the installed app's CFBundleVersion, so
+# it has to be the build number, not the marketing string. They happen to be equal
+# here; emitting the build number keeps that from mattering.
+BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Info.plist)
 SIGNATURE=$(.build/artifacts/sparkle/Sparkle/bin/sign_update "$ZIP" | tr -d '\n')
 PUBDATE=$(LC_ALL=C date "+%a, %d %b %Y %H:%M:%S %z")
 cat > appcast.xml <<APPCAST
@@ -80,7 +84,7 @@ cat > appcast.xml <<APPCAST
     <item>
       <title>Version ${VERSION}</title>
       <pubDate>${PUBDATE}</pubDate>
-      <sparkle:version>${VERSION}</sparkle:version>
+      <sparkle:version>${BUILD}</sparkle:version>
       <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
       <enclosure
