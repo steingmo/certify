@@ -16,6 +16,20 @@ ZIP=build/Certify.zip
 echo "==> Building universal binary (arm64 + x86_64)"
 swift build -c release --arch arm64 --arch x86_64
 
+# Ask SwiftPM where the product landed rather than hardcoding it. A toolchain update
+# moved the universal build from .build/apple to .build/out; because the old directory
+# still held an outdated binary, a hardcoded path silently ships stale code under a
+# fresh version number.
+BIN_DIR=$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path)
+PRODUCT="$BIN_DIR/Certify"
+[ -x "$PRODUCT" ] || { echo "error: no product at $PRODUCT" >&2; exit 1; }
+
+ARCHS=$(lipo -archs "$PRODUCT")
+case "$ARCHS" in
+    *arm64*x86_64* | *x86_64*arm64*) ;;
+    *) echo "error: $PRODUCT is '$ARCHS', expected a universal binary" >&2; exit 1 ;;
+esac
+
 # Assemble and sign outside iCloud-synced folders (the file provider
 # re-stamps xattrs that break codesign).
 STAGE=$(mktemp -d /tmp/certify-release.XXXXXX)
@@ -25,7 +39,7 @@ STAGED_ZIP="$STAGE/Certify.zip"
 
 echo "==> Assembling ${STAGED_APP}"
 mkdir -p "$STAGED_APP/Contents/MacOS" "$STAGED_APP/Contents/Resources/server"
-cp .build/apple/Products/Release/Certify "$STAGED_APP/Contents/MacOS/Certify"
+cp "$PRODUCT" "$STAGED_APP/Contents/MacOS/Certify"
 cp Info.plist "$STAGED_APP/Contents/Info.plist"
 cp AppIcon.icns "$STAGED_APP/Contents/Resources/AppIcon.icns"
 cp assets/node "$STAGED_APP/Contents/Resources/node"
@@ -33,7 +47,7 @@ cp "$SERVER_SRC/server.js" "$SERVER_SRC/package.json" "$STAGED_APP/Contents/Reso
 cp -R "$SERVER_SRC/public" "$STAGED_APP/Contents/Resources/server/public"
 cp -R "$SERVER_SRC/node_modules" "$STAGED_APP/Contents/Resources/server/node_modules"
 mkdir -p "$STAGED_APP/Contents/Frameworks"
-ditto .build/apple/Products/Release/Sparkle.framework "$STAGED_APP/Contents/Frameworks/Sparkle.framework"
+ditto "$BIN_DIR/Sparkle.framework" "$STAGED_APP/Contents/Frameworks/Sparkle.framework"
 install_name_tool -add_rpath @executable_path/../Frameworks "$STAGED_APP/Contents/MacOS/Certify"
 xattr -cr "$STAGED_APP"
 
