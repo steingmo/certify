@@ -21,7 +21,7 @@ cp Info.plist "$STAGED_APP/Contents/Info.plist"
 cp AppIcon.icns "$STAGED_APP/Contents/Resources/AppIcon.icns"
 cp assets/node "$STAGED_APP/Contents/Resources/node"
 
-cp "$SERVER_SRC/server.js" "$SERVER_SRC/package.json" "$STAGED_APP/Contents/Resources/server/"
+cp "$SERVER_SRC/server.js" "$SERVER_SRC/automation.js" "$SERVER_SRC/dns-providers.js" "$SERVER_SRC/package.json" "$STAGED_APP/Contents/Resources/server/"
 cp -R "$SERVER_SRC/public" "$STAGED_APP/Contents/Resources/server/public"
 cp -R "$SERVER_SRC/node_modules" "$STAGED_APP/Contents/Resources/server/node_modules"
 

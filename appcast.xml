@@ -3,14 +3,14 @@
   <channel>
     <title>Certify</title>
     <item>
-      <title>Version 1.1.0</title>
-      <pubDate>Sat, 04 Jul 2026 10:03:00 +0100</pubDate>
-      <sparkle:version>1.1.0</sparkle:version>
-      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <title>Version 1.2.0</title>
+      <pubDate>Sat, 26 Sep 2026 12:07:30 +0100</pubDate>
+      <sparkle:version>1.2.0</sparkle:version>
+      <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
       <enclosure
-        url="https://github.com/steingmo/certify/releases/download/v1.1.0/Certify.zip"
-        sparkle:edSignature="YZVtxVGiX4r3DQ5Jpq7HyOls72dru/BpIOl/qWJTVNLaeyLbcb2uri84+PLvCdrJsQAaeLseRlUGOQ0/r1HYDA==" length="80007098"
+        url="https://github.com/steingmo/certify/releases/download/v1.2.0/Certify.zip"
+        sparkle:edSignature="UdzAYylQi227te24wsLpdzp2AgL82ogmvWYoJR95Uhnkj489aWtFgo1KSnp0TPiOfjEfUBHhJ/0Q5PoagKDoAw==" length="80017648"
         type="application/octet-stream"/>
     </item>
   </channel>

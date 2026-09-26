@@ -1,9 +1,10 @@
 # Certify
 
-A native macOS app for requesting Let's Encrypt certificates with manual
-DNS-01 validation — like a mini Certify The Web / Certbot with a GUI.
-Issues certificates (including wildcards), saves certbot-style PEM files,
-and exports password-protected PFX bundles for Windows/IIS/RDS.
+A native macOS app for requesting Let's Encrypt certificates with DNS-01
+validation — like a mini Certify The Web / Certbot with a GUI. Issues
+certificates (including wildcards), saves certbot-style PEM files, exports
+password-protected PFX bundles for Windows/IIS/RDS, and — with a DNS provider
+connected — handles the DNS records and renews certificates automatically.
 
 ## Install
 
@@ -36,6 +37,22 @@ installs can also update with `brew upgrade --cask certify`.
    `chain.pem`, `fullchain.pem`, `privkey.pem` (same layout as certbot).
    Enter a password and **Export PFX** to save a PKCS#12 bundle.
 
+### DNS providers and automatic renewal
+
+Add an account under **DNS providers** — **DNS Made Easy**, **Cloudflare**, or
+**Azure DNS** — and pick it under *DNS validation* in step 1. Certify then
+creates the TXT records through the provider's API, waits until every
+authoritative name server serves them, issues the certificate, and deletes
+the records again. API secrets are stored in your macOS Keychain.
+
+With **Renew automatically** on, the certificate appears under
+**Certificates**. A background job checks every day at 03:17 and at login —
+even when the app is closed — and renews certificates with less than a third
+of their lifetime left (30 days for Let's Encrypt's 90-day certificates). If
+you exported a PFX with *Create the PFX on every renewal* ticked, a fresh
+`.pfx` is written next to the PEM files too. You get a notification after
+each renewal; the log is in `~/Library/Application Support/Certify/renew.log`.
+
 Notes:
 
 - The PFX uses 3DES/SHA1 for maximum compatibility (imports cleanly on
@@ -55,6 +72,8 @@ The app is a thin native SwiftUI shell around a local Node.js/Express server:
   (PFX export) to a native save dialog, stops the server on quit.
 - `server/` — the Node.js server: ACME (acme-client), PEM/PFX handling
   (node-forge), and the web UI. Also runs standalone: `npm install && npm start`.
+  `automation.js` holds provider issuance, renewal and the launchd schedule;
+  `dns-providers.js` the provider APIs (`node test-providers.js` checks them).
 - `assets/node` — universal Node.js runtime bundled into the app
   (not committed; fetched by `assets/fetch-node.sh`).
 

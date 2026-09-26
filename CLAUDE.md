@@ -1,7 +1,8 @@
 # Certify — project context
 
-Native macOS app for requesting Let's Encrypt certificates with manual
-DNS-01 validation (including wildcards). Writes certbot-style PEM files
+Native macOS app for requesting Let's Encrypt certificates with DNS-01
+validation (including wildcards) — manual, or automatic through a DNS
+provider API with scheduled renewal. Writes certbot-style PEM files
 and exports password-protected PFX bundles for Windows/IIS/RDS.
 Distributed via GitHub Releases and a Homebrew tap (`steingmo/tap`,
 cask `certify`); auto-updates via Sparkle.
@@ -39,16 +40,48 @@ local caches) → `POST /api/issue` (complete challenges, finalize, write
 `cert/chain/fullchain/privkey.pem` to `<folder>/<domain>/`) →
 `POST /api/export-pfx` / `GET /api/download`. Design decisions baked in:
 
-- Pending orders live in an in-memory `Map` — single-user local tool,
-  state is lost on restart by design.
+- Pending manual orders live in an in-memory `Map` — single-user local
+  tool, state is lost on restart by design. Only automation state
+  (providers, auto-renew certificates) is persisted.
 - ACME account keys are per-environment (`account-staging.pem` /
   `account-production.pem`) in the data dir, created once and reused.
 - Certificate keys are RSA 2048 and the PFX uses **3DES/SHA1
   deliberately** — maximum import compatibility on Windows Server
   2012R2–2025 (OpenSSL 3's AES-256 default breaks older importers).
-- The server binds to 127.0.0.1 only.
+- The server binds to 127.0.0.1 only, and a middleware rejects any `Host`
+  header that isn't loopback (DNS-rebinding guard — the API can reach stored
+  DNS credentials).
 - Runs standalone without the app: `cd server && npm install && npm
   start` → http://127.0.0.1:8443 (data dir defaults to `server/data/`).
+
+**Automation** (`server/automation.js`, `server/dns-providers.js`):
+
+- DNS providers (DNS Made Easy, Cloudflare, Azure DNS) each implement
+  `present`/`cleanup` with plain `fetch` — no SDKs. The zone apex is found
+  via public SOA lookup (`findZone`), not provider APIs. Fields marked
+  `secret` go to the **Keychain** (service `Certify`, account = provider id)
+  via `/usr/bin/security -i` on stdin, base64-encoded — never argv, never
+  JSON files. `providers.json` / `certificates.json` in the data dir hold
+  only non-secret config. Remembered PFX passwords: account `pfx-<certId>`.
+- `issueWithProvider` uses acme-client's `auto()` with
+  `skipChallengeVerification` and its own `waitForTxt`, which polls every
+  authoritative name server directly (public resolvers negative-cache).
+  `auto()` runs challenges concurrently; provider calls go through a global
+  `serial()` lock because Azure read-modify-writes one record set per name
+  (wildcard + apex share `_acme-challenge.<domain>`).
+- Provider issuance runs as a polled job (`/api/auto-issue`,
+  `/api/jobs/:id`) — it takes minutes, longer than a web-view request.
+- Renewal: `node server.js --renew` renews auto-renew certificates with
+  under a third of their lifetime left (read from `cert.pem` on disk),
+  posts a notification via `osascript`, exits. `syncScheduler()` (called on
+  server start and when certificates change) installs
+  `~/Library/LaunchAgents/com.steingrimosa.certify.renew.plist` — daily
+  03:17 + RunAtLoad, pointing at `process.execPath` and this `server.js` —
+  only while an auto-renew certificate exists, and leaves an unchanged,
+  loaded agent alone so an in-flight renewal isn't killed.
+- `node server/test-providers.js` checks provider request shapes against a
+  mocked fetch. No provider can be tested live without real credentials —
+  test new providers with a Staging certificate.
 
 `assets/node` — universal (arm64+x64) Node 22 runtime bundled into the
 app so users install nothing. Not committed (~110 MB);
@@ -100,7 +133,7 @@ shipped apps only trust updates signed by the key matching
 
 ## Testing
 
-No XCTest target and no JS test suite. Practical verification:
+No XCTest target; the only JS check is `node server/test-providers.js`. Practical verification:
 
 - Server logic: run it standalone (`cd server && npm start`) and
   exercise the API/UI at http://127.0.0.1:8443. Always use the
